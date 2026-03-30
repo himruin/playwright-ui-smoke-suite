@@ -38,7 +38,7 @@ pytest -k chromium -v
 - **Smoke tests** (`test_smoke.py`) — Baseline healthchecks (page loads, title, UI elements present)
 - **Integration tests** (`test_todomvc.py`) — Real user journeys (add todo, mark complete, delete)
 - **Cross-browser** — Parametrized fixtures run tests on Chromium and Firefox
-- **CI-ready** — GitHub Actions config included for automated test runs
+- **CI-ready** — standard pytest output, easy to integrate into any CI pipeline
 
 ## Design Decision: Sync vs Async
 
@@ -71,15 +71,15 @@ async def page(browser_type):
 
 ## Test Coverage
 
-- [ ] Page load and basic UI visibility
-- [ ] Add todo functionality
-- [ ] Complete todo and state verification
-- [ ] Delete todo functionality
-- [ ] Cross-browser parametrization (Chromium, Firefox)
+- [x] Page load and basic UI visibility
+- [x] Add todo functionality
+- [x] Complete todo and state verification
+- [x] Delete todo functionality
+- [x] Cross-browser parametrization (Chromium, Firefox)
 
 ## Project Goals
 
-- Show Playwright ecosystem expertise (fixtures, Page object patterns, cross-browser testing)
+- Show Playwright ecosystem expertise (fixtures, parametrized cross-browser testing, selector patterns)
 - Demonstrate proper test organization with conftest and parametrization
 - Real-world smoke test patterns relevant to UI QA
 - CI/CD integration with GitHub Actions

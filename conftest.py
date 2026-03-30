@@ -11,7 +11,7 @@ using async Playwright with pytest-asyncio recommended instead:
         async with async_playwright() as p:
             browser = await getattr(p, browser_type).launch()
             page = await browser.new_page()
-            await page.goto(base_url)
+            await page.goto("https://demo.playwright.dev/todomvc")
             yield page
             await page.close()
 """
@@ -36,6 +36,5 @@ def page(browser_type):
 
         yield page
 
-        # Cleanup happens automatically when exiting 'with' block
         context.close()
         browser.close()
