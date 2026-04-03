@@ -33,41 +33,54 @@ pytest tests/test_smoke.py -v
 pytest -k chromium -v
 ```
 
+## Structure
+
+```
+tests/              ← always runs in CI, must stay green
+tests_extended/     ← signal layer: extended Playwright techniques
+```
+
 ## Approach
 
+### tests/
 - **Smoke tests** (`test_smoke.py`) — Baseline healthchecks (page loads, title, UI elements present)
 - **Integration tests** (`test_todomvc.py`) — Real user journeys (add todo, mark complete, delete)
-- **Cross-browser** — Parametrized fixtures run tests on Chromium and Firefox
-- **CI-ready** — standard pytest output, easy to integrate into any CI pipeline
+- **Cross-browser** — `default_page` fixture parametrized across Chromium and Firefox
+
+### tests_extended/
+- **`test_api_mock.py`** — `page.route()` intercepts fetch calls and fulfills with mock JSON. Parametrized across drone states: IDLE, ARMED, AIRBORNE. Serves a minimal HTML fixture via route — no external server needed.
+- **`test_js_runtime.py`** — `page.evaluate()` executes JavaScript in the browser and returns the result to Python. Reads `localStorage` directly to assert internal app state not visible in the DOM.
+- **`test_timing.py`** — Demonstrates correct wait pattern: `expect().to_have_count()` retries until the condition is met. Contrast to `time.sleep()` which is the number one cause of flaky test suites.
+- **`test_visual.py`** — Screenshot regression: captures page state before and after adding a task and asserts pixels changed. Note: `to_have_screenshot()` is JavaScript-only in Playwright — Python uses `page.screenshot()` with manual comparison.
+- **`test_websocket.py`** — Registers a `framereceived` handler before navigation to capture WebSocket frames. Serves an HTML fixture that opens a real WebSocket connection to an echo server. Asserts both the DOM update and the raw captured payload.
+
+## Run Tests
+
+```bash
+# Smoke tests only
+pytest tests/ -v
+
+# Extended tests
+pytest tests_extended/ -v
+
+# Specific browser
+pytest -k chromium -v
+```
 
 ## Design Decision: Sync vs Async
 
-**Why Sync Playwright?**
-
-This suite uses **synchronous Playwright** because:
-- Smoke tests don't require concurrency (not running 100+ parallel browsers)
-- Synchronous code is clearer and more maintainable for straightforward test flows
-- No async/await boilerplate overhead for sequential UI interactions
-- Standard approach for most production test suites
+This suite uses **synchronous Playwright** via `pytest-playwright` fixtures (`playwright`, `browser`).
 
 **If parallelization were needed:**
 
-For high-volume concurrent testing (100+ browsers simultaneously), async Playwright with `pytest-asyncio` would be the right choice:
-```python
-from playwright.async_api import async_playwright
-import pytest
-
-@pytest.fixture
-async def page(browser_type):
-    async with async_playwright() as p:
-        browser = await getattr(p, browser_type).launch()
-        page = await browser.new_page()
-        await page.goto("https://demo.playwright.dev/todomvc")
-        yield page
-        await page.close()
-```
+For high-volume concurrent testing (100+ browsers simultaneously), async Playwright with `pytest-asyncio` would be the right choice.
 
 **Philosophy:** Optimize for clarity first, parallelization only when needed.
+
+## Fixture Architecture
+
+- Root `conftest.py` — `default_page`: cross-browser (chromium + firefox), pre-navigates to TodoMVC. Uses `pytest-playwright`'s `playwright` fixture to avoid event loop conflicts.
+- `tests_extended/conftest.py` — `bare_page`: chromium only, no pre-navigation. Used by tests that control their own routing and navigation.
 
 ## Test Coverage
 
@@ -76,6 +89,11 @@ async def page(browser_type):
 - [x] Complete todo and state verification
 - [x] Delete todo functionality
 - [x] Cross-browser parametrization (Chromium, Firefox)
+- [x] API mocking with parametrized drone states
+- [x] JS runtime / localStorage inspection
+- [x] Wait pattern contrast (correct vs flaky)
+- [x] Visual regression via screenshot comparison
+- [x] WebSocket interception and payload assertion
 
 ## Project Goals
 
@@ -88,5 +106,5 @@ async def page(browser_type):
 
 - [ ] Todo edit functionality
 - [ ] Filter tests (all/active/completed)
-- [ ] Performance metrics collection
-- [ ] Screenshot on failure
+- [x] Markers: `@pytest.mark.smoke` / `@pytest.mark.extended`
+- [x] Nightly CI run at 03:00 for smoke tests
