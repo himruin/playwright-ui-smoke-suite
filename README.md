@@ -67,6 +67,19 @@ pytest tests_extended/ -v
 pytest -k chromium -v
 ```
 
+## Docker
+
+```bash
+# Build
+docker build -t playwright-suite .
+
+# Run smoke tests (default)
+docker run --rm playwright-suite
+
+# Run extended tests
+docker run --rm playwright-suite pytest tests_extended/ -m extended --tb=short
+```
+
 ## Design Decision: Sync vs Async
 
 This suite uses **synchronous Playwright** via `pytest-playwright` fixtures (`playwright`, `browser`).
