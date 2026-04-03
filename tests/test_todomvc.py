@@ -9,15 +9,9 @@ class TestTodoInteractions:
 
     def add_task(self, default_page, task_text):
         """helper: add a task to the list"""
-<<<<<<< Updated upstream
         todo_input = default_page.locator(".new-todo")
         todo_input.fill(task_text)
         todo_input.press("Enter")
-=======
-        task_input = page.locator(".new-todo")
-        task_input.fill(task_text)
-        task_input.press("Enter")
->>>>>>> Stashed changes
 
     @pytest.mark.parametrize("task_text", ["buy milk", "learn playwright", "code review"])
     def test_add_task(self, default_page, task_text):
