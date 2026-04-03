@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * *"  # nightly at 03:00 UTC
+
+jobs:
+  smoke:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium firefox
+
+      - name: Run smoke tests
+        run: pytest tests/ -m smoke --tb=short --junitxml=results-smoke.xml
+
+      - name: Upload smoke results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-smoke
+          path: results-smoke.xml
+
+  extended:
+    name: Extended Tests
+    runs-on: ubuntu-latest
+    needs: smoke
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium firefox
+
+      - name: Run extended tests
+        run: pytest tests_extended/ -m extended --tb=short --junitxml=results-extended.xml
+
+      - name: Upload extended results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-extended
+          path: results-extended.xml
