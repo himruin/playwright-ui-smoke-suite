@@ -17,6 +17,7 @@ HTML_FIXTURE = """
     </html>
 """
 
+@pytest.mark.extended
 @pytest.mark.parametrize("state", ["IDLE", "ARMED", "AIRBORNE"])
 def test_drone_state_display(bare_page, state):
     bare_page.route("**/", lambda route: route.fulfill(status=200, content_type="text/html", body=HTML_FIXTURE))
