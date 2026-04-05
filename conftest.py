@@ -1,6 +1,19 @@
 """Pytest configuration and fixtures for Playwright tests
 
 Using synchronous Playwright for clarity and simplicity.
+Browser lifecycle (launch, context, page, teardown) is managed automatically
+by the pytest-playwright built-in `page` fixture — equivalent sync implementation:
+
+    @pytest.fixture
+    def page(playwright, browser_type, base_url):
+        browser = getattr(playwright, browser_type).launch()
+        context = browser.new_context()
+        page = context.new_page()
+        page.goto(base_url)
+        yield page
+        context.close()
+        browser.close()
+
 For high-volume parallel testing (e.g. 100+ concurrent browsers),
 using async Playwright with pytest-asyncio recommended instead:
 
@@ -16,17 +29,10 @@ using async Playwright with pytest-asyncio recommended instead:
             await page.close()
 """
 import pytest
+from pages import TaskPage
 
 
-@pytest.fixture(params=["chromium", "firefox"])
-def default_page(playwright, request):
-    """create a Playwright page fixture with base URL"""
-    browser = getattr(playwright, request.param).launch()
-    context = browser.new_context()
-    page = context.new_page()
-    page.goto("https://demo.playwright.dev/todomvc")
-
-    yield page
-
-    context.close()
-    browser.close()
+@pytest.fixture
+def task_page(page, base_url):
+    page.goto(base_url)
+    return TaskPage(page, base_url)
