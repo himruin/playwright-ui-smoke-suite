@@ -26,6 +26,7 @@ jobs:
           playwright install --with-deps chromium firefox
 
       - name: Run smoke tests
+        # browsers (chromium, firefox) driven by addopts in pytest.ini
         run: pytest tests/ -m smoke --tb=short --junitxml=results-smoke.xml
 
       - name: Upload smoke results
@@ -53,6 +54,7 @@ jobs:
           playwright install --with-deps chromium firefox
 
       - name: Run extended tests
+        # browsers (chromium, firefox) driven by addopts in pytest.ini
         run: pytest tests_extended/ -m extended --tb=short --junitxml=results-extended.xml
 
       - name: Upload extended results
