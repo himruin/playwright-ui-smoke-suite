@@ -76,8 +76,8 @@ task_page.delete_task("buy milk")
 
 | Marker | Scope | CI behaviour |
 |---|---|---|
-| `smoke` | `tests/` | Runs on every push and PR |
-| `extended` | `tests_extended/` | Runs after smoke passes (`needs: smoke`) |
+| `smoke` | `tests/` | Runs on every push, PR, and nightly schedule |
+| `extended` | `tests_extended/` | Runs after smoke on push/PR only — skipped on nightly schedule |
 
 ## Tests — Extended Layer
 
