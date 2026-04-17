@@ -17,11 +17,20 @@ HTML_FIXTURE = """
     </html>
 """
 
+
 @pytest.mark.extended
 def test_websocket_echo(bare_page):
     received = []
-    bare_page.on("websocket", lambda ws: ws.on("framereceived", lambda payload: received.append(payload)))
-    bare_page.route("**/", lambda route: route.fulfill(status=200, content_type="text/html", body=HTML_FIXTURE))
+    bare_page.on(
+        "websocket",
+        lambda ws: ws.on("framereceived", lambda payload: received.append(payload)),
+    )
+    bare_page.route(
+        "**/",
+        lambda route: route.fulfill(
+            status=200, content_type="text/html", body=HTML_FIXTURE
+        ),
+    )
     bare_page.goto("http://test.local/")
     expect(bare_page.locator("#message")).to_have_text("drone-1 present")
     assert "drone-1 present" in received
