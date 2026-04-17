@@ -64,6 +64,8 @@ All TodoMVC locators and actions live in `TaskPage`. Tests never use raw locator
 task_page.add_task("buy milk")
 task_page.complete_task("buy milk")
 task_page.delete_task("buy milk")
+task_page.edit_task("buy milk", "buy oat milk")
+task_page.select_filter("Active")  # "All" | "Active" | "Completed"
 ```
 
 `task_page` fixture in `conftest.py` navigates to `base_url` and returns `TaskPage(page, base_url)`. Tests that need a blank page (route mocking, WebSocket) use `bare_page` from `tests_extended/conftest.py` instead.
@@ -111,18 +113,16 @@ For high-volume concurrent testing (100+ browsers simultaneously), async Playwri
 ## Test Coverage
 
 - [x] Page load and basic UI visibility
-- [x] Add / complete / delete task via POM
+- [x] Add / complete / delete / edit task via POM
+- [x] Filter tabs (All / Active / Completed)
 - [x] Cross-browser parametrization (Chromium, Firefox)
 - [x] API mocking with parametrized drone states
 - [x] JS runtime / localStorage inspection
 - [x] Wait pattern (expect retry vs time.sleep)
 - [x] Visual regression via screenshot comparison
 - [x] WebSocket interception and payload assertion
+- [x] Failure screenshots saved and uploaded as CI artifacts
 - [x] CI/CD with GitHub Actions (smoke → extended pipeline)
 - [x] Docker support
 
 ## Future Enhancements
-
-- [ ] Task edit functionality
-- [ ] Filter tests (all / active / completed)
-- [ ] Failure screenshots as CI artifacts

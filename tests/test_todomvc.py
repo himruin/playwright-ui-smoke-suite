@@ -27,13 +27,60 @@ class TestTodoInteractions:
         task_page.delete_task(task_text)
         expect(task_page.tasks_items.filter(has_text=task_text)).to_have_count(0)
 
-    def test_complete_and_delete_workflow(self, task_page):
-        """full user journey: add → complete → delete"""
+    @pytest.mark.parametrize(("old_text", "new_text"), [
+        ("buy milk", "buy oat milk"),
+        ("learn playwright", "master playwright"),
+    ])
+    def test_edit_task(self, task_page, old_text, new_text):
+        """edit different tasks and verify they're correctly updated"""
+        task_page.add_task(old_text)
+        task_page.edit_task(old_text, new_text)
+        expect(task_page.tasks_items.filter(has_text=old_text)).not_to_be_visible()
+        expect(task_page.tasks_items.filter(has_text=new_text)).to_be_visible()
+
+    def test_complete_workflow(self, task_page):
+        """full user journey: add → edit → complete → delete"""
         task_text = "learn playwright"
+        edited_text = "master playwright"
 
         task_page.add_task(task_text)
-        task_page.complete_task(task_text)
-        expect(task_page.tasks_items.filter(has_text=task_text)).to_have_class("completed")
 
-        task_page.delete_task(task_text)
-        expect(task_page.tasks_items.filter(has_text=task_text)).to_have_count(0)
+        task_page.edit_task(task_text, edited_text)
+        expect(task_page.tasks_items.filter(has_text=edited_text)).to_be_visible()
+
+        task_page.complete_task(edited_text)
+        expect(task_page.tasks_items.filter(has_text=edited_text)).to_have_class("completed")
+
+        task_page.delete_task(edited_text)
+        expect(task_page.tasks_items.filter(has_text=edited_text)).to_have_count(0)
+
+
+@pytest.mark.smoke
+class TestFilters:
+    """filter tab tests: All / Active / Completed"""
+    def test_active_filter(self, task_page):
+        task_page.add_task("buy milk")
+        task_page.add_task("learn playwright")
+        task_page.complete_task("buy milk")
+
+        task_page.select_filter("Active")
+        expect(task_page.tasks_items.filter(has_text="learn playwright")).to_be_visible()
+        expect(task_page.tasks_items.filter(has_text="buy milk")).to_have_count(0)
+
+    def test_completed_filter(self, task_page):
+        task_page.add_task("buy milk")
+        task_page.add_task("learn playwright")
+        task_page.complete_task("buy milk")
+
+        task_page.select_filter("Completed")
+        expect(task_page.tasks_items.filter(has_text="buy milk")).to_be_visible()
+        expect(task_page.tasks_items.filter(has_text="learn playwright")).to_have_count(0)
+
+    def test_all_filter(self, task_page):
+        task_page.add_task("buy milk")
+        task_page.add_task("learn playwright")
+        task_page.complete_task("buy milk")
+
+        task_page.select_filter("Completed")
+        task_page.select_filter("All")
+        expect(task_page.tasks_items).to_have_count(2)
